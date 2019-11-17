@@ -1,0 +1,12 @@
+html{
+    height: 100%;
+}
+body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: url(/public/img/timg.jpg) no-repeat;
+}
+.box{
+    width:100%;max-width:400px;position: relative; top: 50%;left: 60%;transform: translateY(-229px);
+}

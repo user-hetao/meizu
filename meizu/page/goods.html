@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="./public/css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./public/css/icon.css">
+    <link rel="stylesheet" type="text/css" href="./public/css/images/">
+</head>
+<body>
+        <h2>DataGrid Pagination Demo</h2>
+        <!-- 定义列表 -->
+        <table id="dg" title="My Users" class="easyui-datagrid" style="width:1000px;height:250px"
+                toolbar="#toolbar"
+                rownumbers="true" fitColumns="true" singleSelect="true">
+        </table>
+        <!-- 列表上方工具条 -->
+        <div id="toolbar">
+            <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">新增</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">修改</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>
+        </div>
+        <div id="dlg" class="easyui-dialog" style="width:400px;height:250px;padding:10px 20px"
+		closed="true" buttons="#dlg-buttons">
+	<form id="fm" method="post" >
+        <input type="hidden" name="id">
+		<div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="name" id="name1" prompt="商品名称" iconWidth="28" data-options="label:'商品名称:',required:true" style="width:100%;height:34px;padding:10px;">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="saleInfo" prompt="saleinfo" iconWidth="28" data-options="label:'saleinfo:',required:true" style="width:100%;height:34px;padding:10px;">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="price" prompt="价格" iconWidth="28" data-options="label:'价格:',required:true" style="width:100%;height:34px;padding:10px;">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="num"  prompt="数量" iconWidth="28" data-options="label:'数量:',required:true" style="width:100%;height:34px;padding:10px;">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="isSale"  prompt="是否为推荐商品" iconWidth="28" data-options="label:'是否为推荐商品:',required:true" style="width:100%;height:34px;padding:10px;">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="isNew"  prompt="是否为新品" iconWidth="28" data-options="label:'是否为新品:',required:true" style="width:100%;height:34px;padding:10px;">
+        </div>
+        <div style="margin-bottom:20px">
+            <input class="easyui-textbox" name="type"  prompt="商品类型" iconWidth="28" data-options="label:'商品类型:',required:true" style="width:100%;height:34px;padding:10px;">
+        </div>
+	</form>
+</div>
+<div id="dlg-buttons">
+	<a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveUser()">提交</a>
+	<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">取消</a>
+</div>
+        <script type="text/javascript" src="./public/js/jquery.min.js"></script>
+        <script type="text/javascript" src="./public/js/jquery.easyui.min.js"></script>
+        <script>
+        $(function(){
+            $('#dg').datagrid({
+            url:'/user/page',
+            pagination:true,
+            columns:[[
+                {field:'name',title:'商品名称',width:50},
+                {field:'saleInfo',title:'saleinfo',width:50},
+                {field:'price',title:'价格',width:50},
+                {field:'num',title:'数量',width:50},
+                {field:'isSale',title:'是否为推荐商品',width:50},
+                {field:'isNew',title:'是否为新品',width:50},
+                {field:'type',title:'商品类型',width:50},
+                
+            ]],
+            loadFilter: function(data1){
+                console.log(1111, data1);
+                return data1.data || [];
+            }
+            });
+        })
+        function newUser(){
+            $('#dlg').dialog('open').dialog('setTitle','新增页面');
+            $('#fm').form('clear');
+            url = '/goods/add';
+        }
+        function editUser(){
+            var row = $('#dg').datagrid('getSelected');
+            if (row){
+                $('#dlg').dialog('open').dialog('setTitle','修改用户');
+                console.log(row)
+                $('#fm').form('load', row);
+            }
+            url = '/goods/update';
+        }
+        function destroyUser(){
+            var row = $('#dg').datagrid('getSelected');
+            if (row){
+                $.messager.confirm('删除确认','是否要删除此用户?',function(r){
+                    if (r){
+                        console.log(2);
+                        $.post('/goods/delete',{id:row.id},function(result){
+                            console.log(123);
+                            if (result.code === 1001){
+                                // 删除成功 刷新表格
+                                $('#dg').datagrid('reload');
+                            } else {
+                                $.messager.show({	// show error message
+                                    title: '提示信息',
+                                    msg: result.message
+                                });
+                            }
+                        },'json');
+                    }
+                });
+            }
+        }
+        function saveUser(){
+            $('#fm').form('submit',{
+                url: url,
+                onSubmit: function(){
+                    // return $(this).form('validate');
+                },
+                success: function(str){
+                    var result = JSON.parse(str);
+                    if (result.code !== 1001){
+                        $.messager.show({
+                            title: '提示信息',
+                            msg: result.message
+                        });
+                    } else {
+                        // 1.关闭弹窗
+                        $('#dlg').dialog('close');		// close the dialog
+                        // 2. 刷新列表
+                        $('#dg').datagrid('reload');	// reload the user data
+                    }
+                }
+            });
+        }
+        </script>
+</body>
+</html>

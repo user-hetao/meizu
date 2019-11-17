@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="/public/css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/public/css/icon.css">
+    <link rel="stylesheet" type="text/css" href="/public/css/mycss.css">
+    <script type="text/javascript" src="/public/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/public/js/jquery.easyui.min.js"></script>
+</head>
+<body>
+    <div class="box" id="box1">
+        <div class="easyui-panel" title="登录框" style="width:100%;max-width:400px;padding:30px 60px;">
+            <form id="ff" method="post">
+                <div style="margin-bottom:20px">
+                    <input class="easyui-textbox" name="username" id="name1" prompt="账户名" iconWidth="28" data-options="label:'账户名:',required:true" style="width:100%;height:34px;padding:10px;">
+                </div>
+                <div style="margin-bottom:20px">
+                    <input class="easyui-passwordbox" name="password" id="pass1" prompt="密码" iconWidth="28" data-options="label:'密码:',required:true" style="width:100%;height:34px;padding:10px">
+                </div>
+                <div style="margin-bottom:20px" id="ck">
+                    <input class="easyui-checkbox" name="remember" id="remember" value="false" label="记住我:">
+                </div>
+            </form>
+            <div style="text-align:center;padding:5px 0">
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:80px">登录</a>
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()" style="width:80px">清空</a>
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="zhuce()" style="width:80px">注册</a>
+                
+            </div>
+        </div>
+    </div>
+    <div class="box" id="box2">
+            <div class="easyui-panel" title="注册框" style="width:100%;max-width:400px;padding:30px 60px;">
+                <form id="dd" method="post">
+                    <div style="margin-bottom:20px">
+                        <input class="easyui-textbox" name="username"  id="name2" prompt="账户名" iconWidth="28" data-options="label:'账户名:',required:true" style="width:100%;height:34px;padding:10px;">
+                    </div>
+                    <div style="margin-bottom:20px">
+                        <input class="easyui-passwordbox" name="password" id="pass2" prompt="密码" iconWidth="28" data-options="label:'密码:',required:true" style="width:100%;height:34px;padding:10px">
+                    </div>
+                    <div style="margin-bottom:20px">
+                            <input class="easyui-passwordbox" name="repassword" id="pass3" prompt="请再次输入密码" iconWidth="28" data-options="label:'密码验证:',required:true" style="width:100%;height:34px;padding:10px">
+                        </div>
+                </form>
+                <div style="text-align:center;padding:5px 0">
+                    <a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm1()" style="width:80px">注册</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()" style="width:80px">清空</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" onclick="denglu()" style="width:80px">登录</a>
+                </div>
+            </div>
+        </div>
+        <script>
+        $(function(){
+            $('#box2').hide();
+            $('#ck').checkbox({
+                label:"记住我:",
+                onChange:function(e){
+                    $('#remember').val(e)
+                }
+            })
+        })
+        int();
+        function int(){
+            var userstr=localStorage.getItem('userinfo');
+            var userinfo=JSON.parse(userstr);
+            console.log(typeof userinfo);
+            console.log(userinfo[0].name);
+            if(userinfo.name){
+                console.log(1111);
+                $('.checkbox-value').attr('value',userstr[0].name);
+            }
+            if(userinfo.password){
+                $('.checkbox-value').attr('value',userstr[0].password);
+            }
+        }
+        function zhuce(){
+            $('#box1').hide();
+            $('#box2').show();
+        }
+        function denglu(){
+            $('#box2').hide();
+            $('#box1').show();
+        }
+        function show(a){
+            $.messager.show({
+                title:'My Title',
+                msg:a,
+                showType:'show'
+            });
+        }
+        function submitForm(){
+            $('#ff').form({
+                url:'/login1',
+                onSubmit:function(){
+                    if(! $('#name1').val() || ! $('#pass1').val()){
+                        alert('用户名或密码为空');
+                        return false;
+                    }
+                },
+                success:function(data1){
+                    var json = JSON.parse(data1);
+                    show(json.message);
+                    var remember=$('.checkbox-value').val();
+                    console.log(JSON.stringify(json.data));
+                    console.log(remember);
+                    if(Boolean(remember)){
+                        localStorage.setItem('userinfo',JSON.stringify(json.data));
+                        var userstr=JSON.parse(localStorage.getItem('userinfo'));
+                        console.log(userstr)
+                    }
+                }
+            });
+            $('#ff').submit();
+        }
+        function clearForm(){
+            $('#ff').form('clear');
+        }
+        function submitForm1(){
+            $('#dd').form({
+                url:'/login',
+                onSubmit:function(){
+                    if(! $('#name2').val() || ! $('#pass2').val() || ! $('#pass3').val()){
+                        alert('用户名或密码为空');
+                        return false;
+                    }else if($('#pass2').val() !== $('#pass3').val()){
+                        alert('两次输入的密码不一致');
+                        return false;
+                    }
+                },
+                success:function(data1){
+                    console.log(typeof data1);
+                    console.log(data1);
+                    var json = JSON.parse(data1);
+                    show(json.message);
+                }
+            });
+            $('#dd').submit();
+        }
+        function clearForm(){
+            $('#dd').form('clear');
+        }
+        </script>
+</body>
+</html>
